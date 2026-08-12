@@ -27,7 +27,7 @@ mcq-machine-netlify/
 1. Netlify dashboard → Site settings → Environment variables
 2. "Add variable" click karo:
    - Key:   `GEMINI_API_KEY`
-   - Value: `AQ.Ab8RN6JXTpfsBapzRvTl6h-Dcqnl8Kq7wJj-SCwYLQEo_d0Vxw`
+   - Value: 
 3. Save → Redeploy karo
 
 ### Step 4 — Test karo
