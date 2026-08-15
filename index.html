@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-F2PT9KNMFD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-F2PT9KNMFD');
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCQ MACHINE — Turn any textbook into a real test</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&display=swap');
+  :root {
+    --cream:#faf6ec; --black:#111111;
+    --yellow:#ffd93d; --yellow-deep:#ffc400;
+    --blue:#2542e8; --green:#2f9e44;
+    --red:#e03131; --gray:#767676;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--cream);color:var(--black);font-family:'Space Mono',monospace;min-height:100vh;}
+  h1,h2,h3{font-family:'Archivo Black',sans-serif;}
+
+  header{background:var(--yellow);border-bottom:4px solid var(--black);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+  .header-left{display:flex;align-items:center;gap:14px;}
+  .logo-box{width:46px;height:46px;background:var(--black);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;font-size:22px;flex-shrink:0;}
+  .logo-text{font-family:'Archivo Black',sans-serif;font-size:22px;}
+  .logo-sub{font-size:11px;letter-spacing:1px;color:#333;}
+  .nav-link{background:var(--cream);border:2.5px solid var(--black);padding:9px 16px;font-family:'Space Mono',monospace;font-weight:700;font-size:12px;letter-spacing:0.5px;display:none;}
+  @media(min-width:700px){.nav-link{display:inline-block;}}
+
+  main{max-width:1180px;margin:0 auto;padding:28px 18px 80px;}
+  @media(min-width:900px){
+    .input-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:start;}
+    .col-right{position:sticky;top:20px;}
+    .hero-title{font-size:54px!important;}
+    header{padding:18px 36px;}
+    main{padding:36px 36px 90px;}
+  }
+
+  .hero-title{font-size:34px;line-height:1.08;margin-bottom:14px;}
+  .hero-highlight{background:var(--yellow);display:inline-block;padding:2px 10px;border:3px solid var(--black);box-shadow:6px 6px 0 var(--black);}
+  .hero-desc{font-size:13px;line-height:1.7;margin-bottom:24px;color:#333;}
+
+  .b-card{background:#fff;border:3px solid var(--black);box-shadow:8px 8px 0 var(--black);padding:22px;margin-bottom:24px;}
+  .b-card.blue{background:var(--blue);color:#fff;}
+  .b-title{font-family:'Archivo Black',sans-serif;font-size:15px;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase;}
+
+  textarea{width:100%;border:3px solid var(--black);background:var(--cream);color:var(--black);font-family:'Space Mono',monospace;font-size:13px;padding:13px;min-height:130px;resize:vertical;outline:none;}
+  textarea::placeholder{color:#999;}
+
+  .or-label{font-family:'Archivo Black',sans-serif;font-size:13px;margin:18px 0 10px;letter-spacing:0.5px;}
+
+  .upload-zone{border:3px dashed var(--black);padding:32px 20px;text-align:center;cursor:pointer;position:relative;background:var(--cream);transition:background .15s;}
+  .upload-zone:hover,.upload-zone.dragover{background:var(--yellow);}
+  .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .upload-icon{font-size:30px;margin-bottom:8px;}
+  .upload-main{font-family:'Archivo Black',sans-serif;font-size:14px;margin-bottom:4px;letter-spacing:0.5px;}
+  .upload-sub{font-size:12px;color:var(--gray);}
+  .upload-preview{display:none;margin-top:12px;padding:10px 14px;background:var(--cream);border:2px solid var(--green);font-size:13px;color:var(--green);font-weight:700;align-items:center;gap:8px;}
+  .img-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .img-thumb{position:relative;width:72px;height:72px;border:2px solid var(--black);box-shadow:3px 3px 0 var(--black);overflow:hidden;flex-shrink:0;}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;}
+  .img-thumb .remove-btn{position:absolute;top:2px;right:2px;background:var(--red);color:#fff;border:none;width:18px;height:18px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;}
+  .img-count{font-size:11px;color:var(--gray);margin-top:6px;}
+
+  .count-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px;}
+  .count-btn{background:#fff;border:3px solid var(--black);box-shadow:5px 5px 0 var(--black);text-align:center;padding:20px 8px;font-family:'Archivo Black',sans-serif;font-size:24px;cursor:pointer;transition:all .1s;color:var(--black);}
+  .count-btn:active{box-shadow:1px 1px 0 var(--black);transform:translate(4px,4px);}
+  .count-btn.selected{background:var(--yellow-deep);box-shadow:2px 2px 0 var(--black);transform:translate(3px,3px);}
+  .count-btn.max{font-size:16px;}
+  .count-hint{font-size:12px;color:rgba(255,255,255,.85);line-height:1.6;margin-top:12px;}
+
+  .diff-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .diff-btn{flex:1;min-width:80px;background:#fff;border:3px solid var(--black);box-shadow:3px 3px 0 var(--black);text-align:center;padding:10px 6px;font-family:'Space Mono',monospace;font-weight:700;font-size:13px;cursor:pointer;color:var(--black);}
+  .diff-btn.selected{background:var(--yellow-deep);box-shadow:1px 1px 0 var(--black);transform:translate(2px,2px);}
+
+
+  /* TIMER */
+  .timer-toggle-wrap{margin-bottom:14px;}
+  .timer-toggle-label{font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:0.5px;margin-bottom:8px;text-transform:uppercase;display:block;}
+  .toggle-row{display:flex;align-items:center;gap:12px;}
+  .toggle-switch{position:relative;width:52px;height:28px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:#ccc;border:2.5px solid var(--black);cursor:pointer;transition:.2s;}
+  .toggle-slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:2px;background:#fff;border:1.5px solid var(--black);transition:.2s;}
+  input:checked + .toggle-slider{background:var(--yellow-deep);}
+  input:checked + .toggle-slider:before{transform:translateX(22px);}
+  .toggle-hint{font-size:11px;color:var(--gray);}
+  /* Per-question timer bar */
+  .q-timer-wrap{margin-bottom:10px;display:none;}
+  .q-timer-bar-track{height:10px;background:#fff;border:2px solid var(--black);overflow:hidden;}
+  .q-timer-bar-fill{height:100%;background:var(--green);transition:width 1s linear;}
+  .q-timer-bar-fill.warn{background:var(--yellow-deep);}
+  .q-timer-bar-fill.danger{background:var(--red);}
+  .q-timer-text{font-family:'Archivo Black',sans-serif;font-size:13px;margin-top:4px;text-align:right;}
+  .btn-generate{width:100%;background:var(--yellow);border:3px solid var(--black);box-shadow:6px 6px 0 var(--black);padding:18px;font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;margin-bottom:24px;transition:all .1s;color:var(--black);}
+  .btn-generate:active{box-shadow:2px 2px 0 var(--black);transform:translate(4px,4px);}
+  .btn-generate:disabled{opacity:.5;cursor:not-allowed;}
+
+  #nameCard{margin-bottom:24px;}
+  #userNameInput{width:100%;border:3px solid var(--black);background:var(--cream);color:var(--black);font-family:'Space Mono',monospace;font-size:13px;padding:12px 13px;outline:none;}
+  #userNameInput::placeholder{color:#999;}
+  #userNameInput:focus{background:#fff;}
+
+  .how-list{display:flex;flex-direction:column;gap:12px;}
+  .how-item{font-size:13px;line-height:1.6;}
+  .how-item b{font-family:'Archivo Black',sans-serif;font-size:13px;}
+
+  /* LOADING */
+  .loading-box{display:none;text-align:center;padding:36px 20px;}
+  .spinner-b{width:44px;height:44px;border:4px solid var(--black);border-top-color:var(--yellow-deep);animation:spin .7s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-title{font-family:'Archivo Black',sans-serif;font-size:16px;margin-bottom:4px;}
+  .loading-sub{font-size:12px;color:var(--gray);margin-bottom:16px;}
+  .gen-progress-wrap{margin-top:4px;}
+  .gen-progress-track{height:20px;background:#fff;border:3px solid var(--black);box-shadow:4px 4px 0 var(--black);overflow:hidden;margin-bottom:8px;}
+  .gen-progress-fill{height:100%;background:var(--yellow-deep);width:0%;transition:width 0.4s ease;position:relative;}
+  .gen-progress-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.2) 0px,rgba(255,255,255,0.2) 8px,transparent 8px,transparent 16px);animation:stripes 0.5s linear infinite;}
+  @keyframes stripes{from{background-position:0 0}to{background-position:16px 0}}
+  .gen-progress-pct{font-family:'Archivo Black',sans-serif;font-size:22px;}
+
+  /* QUIZ */
+  #quiz-section{display:none;}
+  .quiz-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+  .quiz-title{font-family:'Archivo Black',sans-serif;font-size:20px;}
+  .quiz-count{background:var(--black);color:var(--yellow);font-size:12px;font-weight:700;padding:6px 12px;}
+  .prog-track{height:12px;background:#fff;border:2px solid var(--black);margin-bottom:22px;overflow:hidden;}
+  .prog-fill{height:100%;background:var(--green);transition:width .3s;}
+
+  .mcq-card{background:#fff;border:3px solid var(--black);box-shadow:6px 6px 0 var(--black);padding:20px;margin-bottom:20px;}
+  .mcq-card.answered-correct{box-shadow:6px 6px 0 var(--green);border-color:var(--green);}
+  .mcq-card.answered-wrong{box-shadow:6px 6px 0 var(--red);border-color:var(--red);}
+  .q-num{display:inline-block;background:var(--black);color:var(--yellow);font-size:11px;font-weight:700;padding:4px 10px;margin-bottom:12px;letter-spacing:0.5px;}
+  .q-text{font-size:14px;font-weight:700;line-height:1.6;margin-bottom:16px;}
+  .options{display:flex;flex-direction:column;gap:9px;}
+  .option{display:flex;align-items:center;gap:10px;border:2.5px solid var(--black);padding:11px 14px;cursor:pointer;background:var(--cream);transition:all .15s;font-size:13px;user-select:none;}
+  .option:hover:not(.locked){background:var(--yellow);}
+  .option.locked{cursor:not-allowed;}
+  .opt-label{width:26px;height:26px;border:2px solid var(--black);background:#fff;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;font-size:12px;flex-shrink:0;}
+
+  @keyframes correctBlink{0%,100%{background:#d3f9d8}50%{background:#8ce99a}}
+  @keyframes wrongBlink{0%,100%{background:#ffe3e3}50%{background:#ffa8a8}}
+  .option.correct{animation:correctBlink .5s ease 3;background:#d3f9d8;border-color:var(--green);}
+  .option.wrong{animation:wrongBlink .5s ease 3;background:#ffe3e3;border-color:var(--red);}
+  .option.correct .opt-label{background:var(--green);color:#fff;}
+  .option.wrong .opt-label{background:var(--red);color:#fff;}
+  .option.show-correct{background:#d3f9d8;border-color:var(--green);}
+  .option.show-correct .opt-label{background:var(--green);color:#fff;}
+
+  .reveal{display:none;margin-top:12px;padding:12px 14px;border:2px solid var(--black);font-size:12px;line-height:1.6;}
+  .reveal.ok{background:#d3f9d8;}
+  .reveal.bad{background:#ffe3e3;}
+
+  .btn-submit{display:none;width:100%;background:var(--green);color:#fff;border:3px solid var(--black);box-shadow:6px 6px 0 var(--black);padding:18px;font-family:'Archivo Black',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;margin-top:10px;}
+  .btn-submit:active{box-shadow:2px 2px 0 var(--black);transform:translate(4px,4px);}
+
+  /* RESULT */
+  #result-section{display:none;}
+  .result-card{background:var(--yellow);border:3px solid var(--black);box-shadow:8px 8px 0 var(--black);padding:32px 22px;text-align:center;margin-bottom:22px;}
+  .score-circle{width:110px;height:110px;border:4px solid var(--black);background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .score-pct{font-family:'Archivo Black',sans-serif;font-size:26px;}
+  .score-lbl{font-size:10px;color:var(--gray);}
+  .result-msg{font-family:'Archivo Black',sans-serif;font-size:22px;margin-bottom:8px;}
+  .result-sub{font-size:13px;color:#333;margin-bottom:18px;}
+  .stats-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .stat-pill{background:#fff;border:2px solid var(--black);padding:7px 14px;font-size:12px;font-weight:700;}
+  .stat-pill.green{color:var(--green);}
+  .stat-pill.red{color:var(--red);}
+
+  .result-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .result-actions button{flex:1;min-width:120px;border:3px solid var(--black);box-shadow:4px 4px 0 var(--black);padding:14px;font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:0.5px;cursor:pointer;}
+  .result-actions button:active{box-shadow:1px 1px 0 var(--black);transform:translate(3px,3px);}
+  .btn-pdf-r{background:var(--blue);color:#fff;}
+  .btn-retake-r,.btn-new-r{background:#fff;color:var(--black);}
+
+  footer{border-top:3px solid var(--black);text-align:center;padding:22px 16px;font-size:11px;color:var(--gray);margin-top:40px;}
+  footer b{color:var(--black);}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--yellow);border:2px solid var(--black);padding:12px 20px;font-size:12px;font-weight:700;transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+
+  /* TOPIC INPUT */
+  .topic-wrap{margin-bottom:0;}
+  .or-topic{display:flex;align-items:center;gap:10px;margin:14px 0;font-family:"Archivo Black",sans-serif;font-size:12px;letter-spacing:0.5px;}
+  .or-topic::before,.or-topic::after{content:"";flex:1;height:2px;background:var(--black);}
+  .topic-input{width:100%;border:3px solid var(--black);background:#fff9db;color:var(--black);font-family:"Space Mono",monospace;font-size:13px;padding:12px 14px;outline:none;box-shadow:4px 4px 0 var(--black);}
+  .topic-input:focus{box-shadow:4px 4px 0 var(--blue);}
+  .topic-input::placeholder{color:#aaa;}
+
+  /* HISTORY */
+  #history-section{display:none;}
+  .history-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .history-title{font-family:"Archivo Black",sans-serif;font-size:20px;}
+  .btn-clear-history{background:#fff;border:2px solid var(--red);color:var(--red);padding:7px 14px;font-family:"Archivo Black",sans-serif;font-size:11px;cursor:pointer;}
+  .history-empty{text-align:center;padding:40px 20px;color:var(--gray);font-size:13px;}
+  .history-card{background:#fff;border:3px solid var(--black);box-shadow:5px 5px 0 var(--black);padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .history-info{flex:1;}
+  .history-topic{font-family:"Archivo Black",sans-serif;font-size:14px;margin-bottom:4px;}
+  .history-meta{font-size:11px;color:var(--gray);}
+  .history-score{font-family:"Archivo Black",sans-serif;font-size:22px;text-align:right;}
+  .history-score.great{color:var(--green);}
+  .history-score.ok{color:var(--yellow-deep);}
+  .history-score.bad{color:var(--red);}
+  .history-badge{font-size:11px;font-weight:700;padding:3px 8px;border:2px solid var(--black);}
+
+  /* HISTORY NAV BTN */
+  .btn-history{background:var(--cream);border:2.5px solid var(--black);padding:9px 16px;font-family:"Space Mono",monospace;font-weight:700;font-size:12px;letter-spacing:0.5px;cursor:pointer;display:none;}
+  @media(min-width:700px){.btn-history{display:inline-block;}}
+
+  /* WHATSAPP SHARE */
+  .btn-wa{background:#25d366;color:#fff;border:3px solid var(--black);box-shadow:4px 4px 0 var(--black);padding:14px;font-family:"Archivo Black",sans-serif;font-size:12px;letter-spacing:0.5px;cursor:pointer;flex:1;min-width:120px;}
+  .btn-wa:active{box-shadow:1px 1px 0 var(--black);transform:translate(3px,3px);}
+  @media(max-width:480px){main{padding:20px 14px 60px;}.b-card{padding:16px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-box">M</div>
+    <div>
+      <div class="logo-text">MCQ MACHINE</div>
+      <div class="logo-sub">PASTE · UPLOAD · TEST YOURSELF</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn-history" onclick="showHistory()">📜 HISTORY</button>
+    <div class="nav-link">HOW IT WORKS →</div>
+  </div>
+</header>
+
+<main>
+  <div id="input-section">
+    <div class="input-grid">
+
+      <div class="col-left">
+        <h1 class="hero-title">TURN ANY TEXTBOOK INTO<br><span class="hero-highlight">A REAL TEST.</span></h1>
+        <p class="hero-desc">Paste a chapter, drop a screenshot, or upload an image. The AI will twist the content into MCQs — you take the test, get instant feedback, and download a PDF report.</p>
+        <div class="b-card">
+          <div class="b-title">Paste Textbook Content</div>
+          <textarea id="textInput" placeholder="Paste a chapter, notes, or any study material here..."></textarea>
+          <div class="or-topic">OR ENTER TOPIC</div>
+          <input type="text" id="topicInput" class="topic-input" placeholder="e.g. Photosynthesis, Maurya Empire, Ohm's Law...">
+          <div class="or-label" style="margin-top:14px;">OR UPLOAD IMAGES / PDF</div>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.heic,.heif" multiple>
+            <div class="upload-icon">⬆️</div>
+            <div class="upload-main">DROP FILES OR CLICK TO BROWSE</div>
+            <div class="upload-sub">JPG, PNG, WEBP only • max 5 images • 10MB each</div>
+          </div>
+          <div id="imgGrid" class="img-grid"></div>
+          <div id="imgCount" class="img-count"></div>
+        </div>
+      </div>
+
+      <div class="col-right">
+        <div class="b-card blue">
+          <div class="b-title">How Many MCQs?</div>
+          <div class="count-grid">
+            <div class="count-btn" onclick="selectCount(this,5)">5</div>
+            <div class="count-btn selected" onclick="selectCount(this,10)">10</div>
+            <div class="count-btn" onclick="selectCount(this,15)">15</div>
+            <div class="count-btn" onclick="selectCount(this,20)">20</div>
+            <div class="count-btn max" onclick="selectCount(this,'max')">MAX</div>
+          </div>
+          <div class="count-hint">Pick a fixed number or "MAX" to let the AI generate as many MCQs as the content supports.</div>
+          <div class="diff-row">
+            <div class="diff-btn" onclick="selectDiff(this,'easy')">EASY</div>
+            <div class="diff-btn selected" onclick="selectDiff(this,'medium')">MEDIUM</div>
+            <div class="diff-btn" onclick="selectDiff(this,'hard')">HARD</div>
+          </div>
+
+          <div class="b-title">Your Name <span style="color:var(--gray);text-transform:none;letter-spacing:0;font-size:11px;">(optional)</span></div>
+          <input type="text" id="userNameInput" placeholder="Enter your name — will show on the test report" maxlength="60" oninput="selectedName = this.value.trim()">
+        </div>
+
+        <div class="b-card" style="padding:16px 18px;margin-bottom:14px;">
+          <div class="timer-toggle-wrap" style="margin-bottom:0;">
+            <span class="timer-toggle-label">⏱ Per-Question Timer (10 sec)</span>
+            <div class="toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="timerToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-hint">Enable karo to har question mein 10 sec milega</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generateMCQs()">✨ GENERATE QUIZ</button>
+
+        <div class="loading-box" id="loadingBox">
+          <div class="spinner-b"></div>
+          <div class="loading-title">GENERATING YOUR QUIZ...</div>
+          <div class="loading-sub" id="loadingMsg">Analyzing content...</div>
+          <div class="gen-progress-wrap">
+            <div class="gen-progress-track">
+              <div class="gen-progress-fill" id="genProgressFill"></div>
+            </div>
+            <div class="gen-progress-pct" id="genProgressPct">0%</div>
+          </div>
+        </div>
+
+        <div class="b-card">
+          <div class="b-title">How It Works</div>
+          <div class="how-list">
+            <div class="how-item"><b>1.</b> Paste text or upload images / PDF</div>
+            <div class="how-item"><b>2.</b> Pick how many questions you want</div>
+            <div class="how-item"><b>3.</b> Answer one MCQ at a time — instant feedback</div>
+            <div class="how-item"><b>4.</b> See your score and download a PDF report</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="quiz-section">
+    <div class="quiz-bar">
+      <div class="quiz-title">YOUR TEST</div>
+      <div class="quiz-count" id="quizProg">0 / 0</div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div id="mcqContainer"></div>
+    <button class="btn-submit" id="submitBtn" onclick="showResult()">🏁 SUBMIT TEST</button>
+  </div>
+
+  <div id="result-section">
+    <div class="result-card">
+      <div class="score-circle">
+        <div class="score-pct" id="scoreNum">0%</div>
+        <div class="score-lbl">SCORE</div>
+      </div>
+      <div class="result-msg" id="resultMsg">—</div>
+      <div class="result-sub" id="resultSub">—</div>
+      <div class="result-sub" id="resultName" style="display:none;font-weight:700;margin-top:-10px;"></div>
+      <div class="stats-row">
+        <div class="stat-pill green" id="chipC">✅ 0 Correct</div>
+        <div class="stat-pill red" id="chipW">❌ 0 Wrong</div>
+        <div class="stat-pill" id="chipT">📋 0 Total</div>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-pdf-r" onclick="downloadPDF()">📄 DOWNLOAD PDF</button>
+      <button class="btn-wa" onclick="shareWhatsApp()">📱 WHATSAPP</button>
+      <button class="btn-retake-r" onclick="retakeTest()">🔄 RETAKE</button>
+      <button class="btn-new-r" onclick="newTest()">➕ NEW TEST</button>
+    </div>
+  </div>
+  <!-- HISTORY SECTION -->
+  <div id="history-section">
+    <div class="history-header">
+      <div class="history-title">📜 TEST HISTORY</div>
+      <button class="btn-clear-history" onclick="clearHistory()">🗑 CLEAR ALL</button>
+    </div>
+    <div id="historyList"></div>
+    <div style="margin-top:16px;">
+      <button class="btn-retake-r" style="width:100%;padding:14px;border:3px solid var(--black);box-shadow:4px 4px 0 var(--black);font-family:'Archivo Black',sans-serif;font-size:13px;cursor:pointer;background:#fff;" onclick="showInput()">← BACK</button>
+    </div>
+  </div>
+</main>
+
+<footer>© MCQ MACHINE<br>BUILD BY <b>RAEESH SAIYAD</b>
+
+<a href="https://rahishssaiyad-bit.github.io/rahishsaiyad">Meet the Developer...!🙂</a>
+
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── CONFIG ────────────────────────────────────────────
+  // Proxy URL — Gemini key is safe on Netlify server, not in HTML
+  const GEMINI_URL = "/.netlify/functions/gemini";
+
+  let quizData = [];
+  let userAnswers = {};
+  let uploadedImages = []; // [{b64, type, name}] max 5
+  let selectedCount = 10;
+  let selectedDiff = 'medium';
+  var testHistory = JSON.parse(localStorage.getItem('mcqHistory') || '[]');
+  var currentTopic = '';
+  var timerEnabled = false;
+  var currentTimer = null;  // current question interval
+  var TIMER_SECONDS = 10;
+  let selectedName = '';
+
+  const loadMsgs = [
+    "Analyzing content...",
+    "Finding key concepts...",
+    "Crafting tricky questions...",
+    "Shuffling options...",
+    "Almost ready! ⚡"
+  ];
+
+  // ── UI CONTROLS ───────────────────────────────────────
+  function selectCount(el, val) {
+    document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCount = val;
+  }
+
+  function selectDiff(el, val) {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedDiff = val;
+  }
+
+  // ── FILE UPLOAD ───────────────────────────────────────
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    handleFiles(Array.from(e.target.files));
+  });
+
+  const uploadZoneEl = document.getElementById('uploadZone');
+  uploadZoneEl.addEventListener('dragover', function(e) { e.preventDefault(); uploadZoneEl.classList.add('dragover'); });
+  uploadZoneEl.addEventListener('dragleave', function() { uploadZoneEl.classList.remove('dragover'); });
+  uploadZoneEl.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadZoneEl.classList.remove('dragover');
+    handleFiles(Array.from(e.dataTransfer.files));
+  });
+
+  var ALLOWED_MIME = ['image/jpeg','image/jpg','image/png','image/webp','image/gif','image/bmp','image/heic','image/heif'];
+  var ALLOWED_EXT  = ['.jpg','.jpeg','.png','.webp','.gif','.bmp','.heic','.heif'];
+  var MAX_FILE_SIZE_MB = 10;
+
+  function isValidImageFile(file) {
+    var ext = '.' + file.name.split('.').pop().toLowerCase();
+    var mimeOk = ALLOWED_MIME.indexOf(file.type.toLowerCase()) !== -1;
+    var extOk  = ALLOWED_EXT.indexOf(ext) !== -1;
+    var sizeOk = file.size <= MAX_FILE_SIZE_MB * 1024 * 1024;
+    return mimeOk && extOk && sizeOk;
+  }
+
+  function handleFiles(files) {
+    var validFiles = [], rejected = [];
+    Array.from(files).forEach(function(file) {
+      if (isValidImageFile(file)) validFiles.push(file);
+      else rejected.push(file.name);
+    });
+
+    if (rejected.length > 0) {
+      showToast('⛔ Rejected: ' + rejected.join(', ') + ' — only JPG/PNG/WEBP allowed!');
+    }
+
+    var remaining = 5 - uploadedImages.length;
+    if (remaining <= 0) { showToast('⚠️ Maximum 5 images already added!'); return; }
+
+    var toAdd = validFiles.slice(0, remaining);
+    if (validFiles.length > remaining) showToast('⚠️ Only ' + remaining + ' more allowed (max 5)');
+
+    toAdd.forEach(function(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedImages.push({ b64: e.target.result.split(',')[1], type: file.type, name: file.name });
+        renderImgGrid();
+      };
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('fileInput').value = '';
+  }
+
+  function renderImgGrid() {
+    var grid = document.getElementById('imgGrid');
+    var countEl = document.getElementById('imgCount');
+    grid.innerHTML = uploadedImages.map(function(img, i) {
+      return '<div class="img-thumb">'
+        + '<img src="data:' + img.type + ';base64,' + img.b64 + '" alt="img' + i + '">'
+        + '<button class="remove-btn" onclick="removeImg(' + i + ')">✕</button>'
+        + '</div>';
+    }).join('');
+    countEl.textContent = uploadedImages.length > 0 ? uploadedImages.length + ' / 5 image(s) added' : '';
+  }
+
+  function removeImg(i) {
+    uploadedImages.splice(i, 1);
+    renderImgGrid();
+  }
+
+  // ── PROGRESS BAR ──────────────────────────────────────
+  var progressInterval = null;
+
+  function startProgress() {
+    var pct = 0;
+    var i = 0;
+    var fill = document.getElementById('genProgressFill');
+    var pctEl = document.getElementById('genProgressPct');
+    fill.style.width = '0%';
+    pctEl.textContent = '0%';
+
+    progressInterval = setInterval(function() {
+      // Message rotation
+      if (i % 3 === 0) {
+        document.getElementById('loadingMsg').textContent = loadMsgs[Math.floor(i / 3) % loadMsgs.length];
+      }
+      i++;
+
+      // Non-linear progress: fast early, slows near end
+      if (pct < 40)      pct += 3;
+      else if (pct < 70) pct += 1.5;
+      else if (pct < 88) pct += 0.6;
+      else if (pct < 94) pct += 0.2;
+
+      fill.style.width = pct + '%';
+      pctEl.textContent = Math.round(pct) + '%';
+    }, 300);
+  }
+
+  function stopProgress(success) {
+    if (progressInterval) {
+      clearInterval(progressInterval);
+      progressInterval = null;
+    }
+    if (success) {
+      var fill = document.getElementById('genProgressFill');
+      var pctEl = document.getElementById('genProgressPct');
+      fill.style.width = '100%';
+      pctEl.textContent = '100%';
+    }
+  }
+
+  // ── GENERATE MCQs ─────────────────────────────────────
+  async function generateMCQs() {
+    var text = document.getElementById('textInput').value.trim();
+    var topic = document.getElementById('topicInput').value.trim();
+    currentTopic = topic || (text ? text.slice(0, 60) + (text.length > 60 ? '...' : '') : uploadedImages.length > 0 ? 'Image Upload' : '');
+
+    if (!text && uploadedImages.length === 0 && !topic) {
+      showToast('⚠️ Text paste karo, topic likho, ya image upload karo!');
+      return;
+    }
+
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('loadingBox').style.display = 'block';
+    startProgress();
+
+    var qInstr = selectedCount === 'max'
+      ? 'Generate as MANY unique, high-quality MCQs as possible from this content — minimum 20, no upper limit. Cover every fact, concept, date, name, definition, and application mentioned.'
+      : 'Generate EXACTLY ' + selectedCount + ' MCQs — this is mandatory. If content seems short, create questions from different angles: definitions, applications, examples, comparisons, true/false style, fill-in-blank style. You MUST produce exactly ' + selectedCount + ' questions, no less.';
+
+    var prompt = 'You are an expert MCQ generator. Respond ONLY with a raw JSON object — no markdown, no backticks, nothing else.\n\n'
+      + 'LANGUAGE: Detect content language and use SAME language for ALL output. Gujarati→ગુજરાતી Hindi→हिंदी English→English. Default: Gujarati.\n\n'
+      + 'RULE: Never refuse. Never ask for more content. Always generate MCQs.\n\n'
+      + 'SOURCE OF TRUTH — READ CAREFULLY:\n'
+      + '- Every question, every option, and the correct answer MUST come strictly from the attached text/image/PDF content below. Do NOT pull facts, names, dates, or figures from your own outside/general knowledge — the provided content is the ONLY source you are allowed to use.\n'
+      + '- If the content does not clearly state something, do not invent or guess it. Only ask about facts that are explicitly present or directly and unambiguously inferable from the given content.\n'
+      + '- CROSS-CHECK before finalizing each question: re-read the exact line(s) in the content that support your chosen "correct" answer. If you cannot point to specific text/visual evidence in the content for the correct answer, discard that question and write a different one that you CAN verify from the content.\n'
+      + '- Double check that exactly one option is unambiguously correct according to the content, and that the other three options are clearly wrong according to the same content (not just plausible-sounding distractors).\n\n'
+      + 'EXPLANATION DEPTH: For each question, write a detailed explanation (3-5 sentences), not a one-liner. It must: (1) state the exact fact/evidence from the content that proves the answer, quoting or closely paraphrasing the relevant part, (2) briefly explain why each of the other options is incorrect according to the content, (3) add any useful context from the content that helps the learner understand the concept, not just memorize the answer.\n\n'
+      + 'QUANTITY: ' + qInstr + '\n\n'
+      + 'DIFFICULTY: ' + selectedDiff + '\n\n'
+      + 'JSON FORMAT (your entire reply must be exactly this shape):\n'
+      + '{"detectedLang":"gujarati","questions":[{"q":"question?","options":["A","B","C","D"],"correct":0,"explanation":"detailed reason with evidence from content"}]}\n\n'
+      + 'Content (this is your ONLY source of facts — use nothing else):\n'
+      + (topic && !text && uploadedImages.length === 0
+          ? 'Generate MCQs on this topic using your knowledge: ' + topic + '\n\nIMPORTANT: Use your full knowledge about this topic. Generate EXACTLY ' + (selectedCount === \'max\' ? \'as many as possible (minimum 20)\' : selectedCount) + ' MCQs covering: definitions, key facts, dates, important personalities, applications, comparisons, causes & effects, examples. Every question must be unique and test different aspects of the topic.'
+          : topic
+            ? 'Topic: ' + topic + (text ? '\n\nContent:\n' + text : '')
+            : (text || '(see attached ' + uploadedImages.length + ' image(s))'));
+
+    try {
+      var parts = [];
+      uploadedImages.forEach(function(img) {
+        parts.push({ inlineData: { mimeType: img.type, data: img.b64 } });
+      });
+      parts.push({ text: prompt });
+
+      var maxTok = 8192; // Always max — let the prompt control quantity
+
+      var res = await fetch(GEMINI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: parts }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: maxTok,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+
+      var data = await res.json();
+      if (data.error === 'Rate limit reached') {
+        throw new Error(data.message || 'Aaj ke 10 requests khatam! Kal dobara try karo.');
+      }
+      if (data.error) throw new Error(data.error.message || data.error || JSON.stringify(data.error));
+
+      var raw = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+                 data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
+                 data.candidates[0].content.parts[0].text) || '';
+
+      if (!raw.trim()) throw new Error('Empty response — retry karo');
+
+      var clean = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = clean.indexOf('{');
+      var e = clean.lastIndexOf('}');
+      if (s === -1 || e === -1) throw new Error('Format error — retry karo');
+
+      var parsed = JSON.parse(clean.slice(s, e + 1));
+      if (!parsed.questions || !parsed.questions.length) throw new Error('Questions generate nahi hue — retry karo');
+
+      stopProgress(true);
+      // Small pause to show 100%
+      await new Promise(function(resolve) { setTimeout(resolve, 400); });
+
+      quizData = parsed.questions;
+      userAnswers = {};
+
+      var lmap = { gujarati: '🇮🇳 Gujarati', hindi: 'Hindi', english: 'English' };
+      showToast('✅ ' + quizData.length + ' MCQs ready! Lang: ' + (lmap[parsed.detectedLang] || 'Auto'));
+      renderQuiz();
+
+    } catch (err) {
+      stopProgress(false);
+      console.error(err);
+      showToast('❌ Error: ' + err.message);
+    }
+
+    document.getElementById('loadingBox').style.display = 'none';
+    document.getElementById('generateBtn').disabled = false;
+  }
+
+  // ── RENDER QUIZ ───────────────────────────────────────
+  function renderQuiz() {
+    document.getElementById('input-section').style.display = 'none';
+    document.getElementById('quiz-section').style.display = 'block';
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+
+    var container = document.getElementById('mcqContainer');
+    container.innerHTML = '';
+    updateProg();
+
+    timerEnabled = document.getElementById('timerToggle').checked;
+
+    var lb = ['A', 'B', 'C', 'D'];
+    quizData.forEach(function(q, qi) {
+      var card = document.createElement('div');
+      card.className = 'mcq-card';
+      card.id = 'qcard-' + qi;
+      var optsHtml = q.options.map(function(opt, oi) {
+        return '<div class="option" id="opt-' + qi + '-' + oi + '" onclick="pick(' + qi + ',' + oi + ')">'
+          + '<div class="opt-label">' + lb[oi] + '</div>'
+          + '<div>' + opt + '</div>'
+          + '</div>';
+      }).join('');
+      var timerHtml = timerEnabled
+        ? '<div class="q-timer-wrap" id="twrap-' + qi + '" style="display:block">'
+          + '<div class="q-timer-bar-track"><div class="q-timer-bar-fill" id="tbar-' + qi + '" style="width:100%"></div></div>'
+          + '<div class="q-timer-text" id="ttxt-' + qi + '">⏱ 10s</div>'
+          + '</div>'
+        : '';
+      card.innerHTML = timerHtml
+        + '<div class="q-num">QUESTION ' + (qi + 1) + ' OF ' + quizData.length + '</div>'
+        + '<div class="q-text">' + q.q + '</div>'
+        + '<div class="options" id="opts-' + qi + '">' + optsHtml + '</div>'
+        + '<div class="reveal" id="rev-' + qi + '"></div>';
+      container.appendChild(card);
+    });
+
+    if (timerEnabled) startQuestionTimer(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── TIMER ─────────────────────────────────────────────
+  function startQuestionTimer(qi) {
+    stopCurrentTimer();
+    if (!timerEnabled) return;
+    if (userAnswers[qi] !== undefined) return; // already answered
+    if (qi >= quizData.length) return;
+
+    var secs = TIMER_SECONDS;
+    var bar = document.getElementById('tbar-' + qi);
+    var txt = document.getElementById('ttxt-' + qi);
+    if (!bar || !txt) return;
+
+    currentTimer = setInterval(function() {
+      secs--;
+      var pct = (secs / TIMER_SECONDS) * 100;
+      bar.style.width = pct + '%';
+      txt.textContent = '⏱ ' + secs + 's';
+
+      // Color change
+      bar.className = 'q-timer-bar-fill';
+      if (secs <= 3) bar.classList.add('danger');
+      else if (secs <= 6) bar.classList.add('warn');
+
+      if (secs <= 0) {
+        stopCurrentTimer();
+        // Time up — auto-lock this question (no answer)
+        autoLockQuestion(qi);
+      }
+    }, 1000);
+  }
+
+  function stopCurrentTimer() {
+    if (currentTimer) { clearInterval(currentTimer); currentTimer = null; }
+  }
+
+  function autoLockQuestion(qi) {
+    if (userAnswers[qi] !== undefined) return;
+    userAnswers[qi] = -1; // -1 = time up, no answer
+
+    var card = document.getElementById('qcard-' + qi);
+    var rev = document.getElementById('rev-' + qi);
+    var correct = quizData[qi].correct;
+
+    document.querySelectorAll('#opts-' + qi + ' .option').forEach(function(o) { o.classList.add('locked'); });
+    document.getElementById('opt-' + qi + '-' + correct).classList.add('show-correct');
+    card.classList.add('answered-wrong');
+
+    rev.className = 'reveal bad';
+    rev.innerHTML = '⏰ Time up! Sahi jawab: <b>' + ['A','B','C','D'][correct] + '. '
+      + quizData[qi].options[correct] + '</b>';
+    rev.style.display = 'block';
+
+    var bar = document.getElementById('tbar-' + qi);
+    var txt = document.getElementById('ttxt-' + qi);
+    if (bar) { bar.style.width = '0%'; bar.className = 'q-timer-bar-fill danger'; }
+    if (txt) txt.textContent = '⏱ 0s';
+
+    updateProg();
+
+    // Scroll to next unanswered question after brief pause
+    setTimeout(function() {
+      var nextQi = findNextUnanswered(qi);
+      if (nextQi !== -1) {
+        var nextCard = document.getElementById('qcard-' + nextQi);
+        if (nextCard) nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        startQuestionTimer(nextQi);
+      } else {
+        var sb = document.getElementById('submitBtn');
+        sb.style.display = 'block';
+        sb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 1200);
+  }
+
+  function findNextUnanswered(fromQi) {
+    for (var i = fromQi + 1; i < quizData.length; i++) {
+      if (userAnswers[i] === undefined) return i;
+    }
+    return -1;
+  }
+
+  // ── PICK ANSWER ───────────────────────────────────────
+  function pick(qi, oi) {
+    if (userAnswers[qi] !== undefined) return;
+    userAnswers[qi] = oi;
+
+    var correct = quizData[qi].correct;
+    var card = document.getElementById('qcard-' + qi);
+    var rev = document.getElementById('rev-' + qi);
+
+    document.querySelectorAll('#opts-' + qi + ' .option').forEach(function(o) {
+      o.classList.add('locked');
+    });
+
+    var selOpt = document.getElementById('opt-' + qi + '-' + oi);
+
+    if (oi === correct) {
+      selOpt.classList.add('correct');
+      card.classList.add('answered-correct');
+      rev.className = 'reveal ok';
+      rev.innerHTML = '✅ CORRECT! ' + (quizData[qi].explanation || '');
+    } else {
+      selOpt.classList.add('wrong');
+      card.classList.add('answered-wrong');
+      document.getElementById('opt-' + qi + '-' + correct).classList.add('show-correct');
+      rev.className = 'reveal bad';
+      rev.innerHTML = '❌ WRONG! Correct: <b>' + ['A','B','C','D'][correct] + '. '
+        + quizData[qi].options[correct] + '</b>'
+        + (quizData[qi].explanation ? ' — ' + quizData[qi].explanation : '');
+    }
+    rev.style.display = 'block';
+    stopCurrentTimer();
+
+    // Update timer bar to show completed state
+    var bar = document.getElementById('tbar-' + qi);
+    var txt = document.getElementById('ttxt-' + qi);
+    if (bar) { bar.style.width = '100%'; bar.className = 'q-timer-bar-fill'; }
+    if (txt) txt.textContent = '✅ Done';
+
+    updateProg();
+
+    var allAnswered = Object.keys(userAnswers).length === quizData.length;
+    if (allAnswered) {
+      var sb = document.getElementById('submitBtn');
+      sb.style.display = 'block';
+      sb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (timerEnabled) {
+      // After short pause, scroll to next unanswered and start its timer
+      setTimeout(function() {
+        var nextQi = findNextUnanswered(qi);
+        if (nextQi !== -1) {
+          var nextCard = document.getElementById('qcard-' + nextQi);
+          if (nextCard) nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          startQuestionTimer(nextQi);
+        }
+      }, 800);
+    }
+  }
+
+  function updateProg() {
+    var a = Object.keys(userAnswers).length;
+    var t = quizData.length;
+    document.getElementById('quizProg').textContent = a + ' / ' + t;
+    document.getElementById('progFill').style.width = t ? ((a / t) * 100) + '%' : '0%';
+  }
+
+  // ── RESULT ────────────────────────────────────────────
+  function showResult() {
+    stopCurrentTimer();
+    var total = quizData.length;
+    var correct = 0;
+    Object.keys(userAnswers).forEach(function(qi) {
+      if (quizData[qi].correct === userAnswers[qi]) correct++;
+    });
+    var pct = Math.round((correct / total) * 100);
+
+    document.getElementById('scoreNum').textContent = pct + '%';
+    document.getElementById('chipC').textContent = '✅ ' + correct + ' Correct';
+    document.getElementById('chipW').textContent = '❌ ' + (total - correct) + ' Wrong';
+    document.getElementById('chipT').textContent = '📋 ' + total + ' Total';
+
+    var msg, sub;
+    if (pct >= 90)      { msg = 'VERY GOOD! 👏🏼👍🏼🫡'; sub = 'Outstanding! You really know this.'; }
+    else if (pct >= 80) { msg = 'GOOD! 👍🏼';            sub = 'Solid work — a little more practice!'; }
+    else if (pct >= 60) { msg = 'KEEP GOING! 🙂';        sub = 'Not bad — revisit the tricky parts.'; }
+    else                { msg = 'MEHNAT NI JARUR CHHE 🙁'; sub = 'Go back to the material and try again.'; }
+
+    document.getElementById('resultMsg').textContent = msg;
+    document.getElementById('resultSub').textContent = sub;
+    var nameEl = document.getElementById('resultName');
+    if (selectedName) {
+      nameEl.textContent = '👤 ' + selectedName;
+      nameEl.style.display = 'block';
+    } else {
+      nameEl.style.display = 'none';
+    }
+    // Save to history
+    var entry = {
+      id: Date.now(),
+      topic: currentTopic,
+      score: pct,
+      correct: correct,
+      total: total,
+      date: new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }),
+      time: new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' })
+    };
+    testHistory.unshift(entry);
+    if (testHistory.length > 50) testHistory = testHistory.slice(0, 50); // max 50 records
+    localStorage.setItem('mcqHistory', JSON.stringify(testHistory));
+
+    document.getElementById('quiz-section').style.display = 'none';
+    document.getElementById('result-section').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── PDF DOWNLOAD ──────────────────────────────────────
+  function downloadPDF() {
+    var total = quizData.length;
+    var correct = 0;
+    Object.keys(userAnswers).forEach(function(qi) { if (quizData[qi].correct === userAnswers[qi]) correct++; });
+    var pct = Math.round((correct / total) * 100);
+    var lb = ["A","B","C","D"];
+    var scoreColor = pct>=90 ? "#2f9e44" : pct>=60 ? "#e67700" : "#e03131";
+    var msg = pct>=90 ? "VERY GOOD! 👏🏼" : pct>=80 ? "GOOD! 👍🏼" : pct>=60 ? "KEEP GOING! 🙂" : "MEHNAT NI JARUR CHHE 🙁";
+    var questionsHtml = quizData.map(function(q, qi) {
+      var ua = userAnswers[qi];
+      var optsHtml = q.options.map(function(opt, oi) {
+        var isRight = (oi === q.correct), isSel = (oi === ua);
+        var cls = isRight ? "opt-correct" : (isSel ? "opt-wrong" : "opt-normal");
+        var tag = isRight ? " ✓" : (isSel ? " ✗" : "");
+        return "<div class=\"opt " + cls + "\"><span class=\"opt-lbl\">" + lb[oi] + ".</span><span>" + opt + tag + "</span></div>";
+      }).join("");
+      var exp = q.explanation ? "<div class=\"explanation\">💡 " + q.explanation + "</div>" : "";
+      return "<div class=\"q-block\"><div class=\"q-num\">Q"+(qi+1)+" / "+total+"</div><div class=\"q-text\">"+q.q+"</div><div class=\"opts\">"+optsHtml+"</div>"+exp+"</div>";
+    }).join("");
+    var css = "body{font-family:Noto Sans Gujarati,Noto Sans,sans-serif;margin:0;padding:0;background:#fff;color:#111;}.hint{background:#111;color:#ffd93d;text-align:center;padding:12px;font-size:13px;font-weight:700;}.hint button{background:#ffd93d;color:#111;border:2px solid #111;padding:7px 18px;font-weight:900;font-size:13px;cursor:pointer;margin-left:10px;}.header{background:#ffd93d;border-bottom:4px solid #111;padding:18px 24px;}.header h1{font-size:19px;font-weight:900;margin:0 0 4px;}.score-row{display:flex;align-items:center;gap:12px;margin-top:10px;}.score-circle{width:56px;height:56px;border:3px solid #111;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:"+scoreColor+";}.score-msg{font-size:16px;font-weight:900;}.chips{display:flex;gap:7px;margin-top:5px;}.chip{border:2px solid #111;padding:3px 9px;font-size:11px;font-weight:700;}.chip.g{color:#2f9e44;}.chip.r{color:#e03131;}.questions{padding:16px 24px;}.q-block{border:2px solid #111;padding:13px;margin-bottom:14px;page-break-inside:avoid;}.q-num{display:inline-block;background:#111;color:#ffd93d;font-size:10px;font-weight:700;padding:2px 7px;margin-bottom:7px;}.q-text{font-size:14px;font-weight:700;line-height:1.6;margin-bottom:9px;}.opts{display:flex;flex-direction:column;gap:5px;}.opt{display:flex;align-items:baseline;gap:8px;padding:6px 9px;border:1.5px solid #ddd;font-size:13px;}.opt-correct{border-color:#2f9e44;background:#d3f9d8;color:#1a6b2a;font-weight:700;}.opt-wrong{border-color:#e03131;background:#ffe3e3;color:#c92a2a;}.opt-normal{color:#555;}.opt-lbl{font-weight:700;min-width:15px;}.explanation{margin-top:7px;padding:6px 9px;background:#fff9db;border:1.5px solid #ffc400;font-size:12px;color:#666;}.footer{text-align:center;padding:12px;font-size:11px;color:#999;border-top:2px solid #111;}"
+      + "@media print{"
+      + "@page{margin:8mm 7mm;}"
+      + ".hint{display:none;}"
+      + "body{font-size:10.5px;}"
+      + ".header{padding:10px 14px;}"
+      + ".header h1{font-size:15px;margin:0 0 2px;}"
+      + ".score-circle{width:38px;height:38px;font-size:11px;border-width:2px;}"
+      + ".score-msg{font-size:12px;}"
+      + ".score-row{gap:8px;margin-top:6px;}"
+      + ".chips{gap:5px;margin-top:3px;}"
+      + ".chip{padding:2px 6px;font-size:9px;}"
+      + ".questions{padding:8px 12px;}"
+      + ".q-block{padding:7px 9px;margin-bottom:6px;border-width:1.3px;}"
+      + ".q-num{font-size:8.5px;padding:1px 5px;margin-bottom:4px;}"
+      + ".q-text{font-size:10.5px;line-height:1.32;margin-bottom:5px;}"
+      + ".opts{display:grid;grid-template-columns:1fr 1fr;gap:3px 6px;}"
+      + ".opt{padding:3px 6px;font-size:9.5px;border-width:1px;line-height:1.25;}"
+      + ".opt-lbl{min-width:11px;}"
+      + ".explanation{margin-top:4px;padding:4px 6px;font-size:8.8px;line-height:1.28;border-width:1px;}"
+      + ".footer{padding:6px;font-size:8.5px;}"
+      + "}";
+    var html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>MCQ Report</title>"
+      + "<link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans:wght@400;700&display=swap\" rel=\"stylesheet\">"
+      + "<style>" + css + "</style></head><body>"
+      + "<div class=\"hint\">📄 Click here..! to Save the PDF or PRINT:- <button onclick=\"window.print()\">PRINT 🖨️/ SAVE AS PDF⬇️</button></div>"
+      + "<div class=\"header\"><h1>MCQ MACHINE — Test Report</h1><div style=\"font-size:12px;color:#333\">Build by Raeesh Saiyad</div>"
+     + (selectedName ? "<div style=\"font-size:14px;font-weight:900;margin-top:8px;\">👤 " + selectedName + "</div>" : "")
+      + "<div class=\"score-row\"><div class=\"score-circle\">"+pct+"%</div>"
+      + "<div><div class=\"score-msg\">"+msg+"</div><div style=\"font-size:12px;color:#555\">"+correct+" correct out of "+total+"</div>"
+      + "<div class=\"chips\"><div class=\"chip g\">✅ "+correct+" Correct</div><div class=\"chip r\">❌ "+(total-correct)+" Wrong</div><div class=\"chip\">📋 "+total+" Total</div></div>"
+      + "</div></div></div>"
+      + "<div class=\"questions\">"+questionsHtml+"</div>"
+      + "<div class=\"footer\">© MCQ MACHINE | Build by Raeesh Saiyad</div></body></html>";
+    
+      
+      var win = window.open("", "_blank");
+    if (win) { win.document.write(html); win.document.close(); }
+    else { showToast("⚠️ Popup blocked! Browser mein allow karo."); }
+  }
+
+
+
+  // ── WHATSAPP SHARE ────────────────────────────────────────────
+  function shareWhatsApp() {
+    var total = quizData.length;
+    var correct = 0;
+    Object.keys(userAnswers).forEach(function(qi) {
+      if (quizData[qi].correct === userAnswers[qi]) correct++;
+    });
+    var pct = Math.round((correct / total) * 100);
+    var name = (document.getElementById('userNameInput').value || '').trim();
+    var emoji = pct >= 90 ? '🏆' : pct >= 80 ? '👍🏼' : pct >= 60 ? '🙂' : '📚';
+    var msg = emoji + ' *MCQ Machine Test Result*\n\n'
+      + (name ? '👤 Name: *' + name + '*\n' : '')
+      + '📖 Topic: *' + currentTopic + '*\n'
+      + '✅ Score: *' + correct + '/' + total + ' (' + pct + '%)*\n'
+      + '📅 Date: ' + new Date().toLocaleDateString('en-IN') + '\n\n'
+      + '_Generated by MCQ Machine_ 🤖';
+    var url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
+  }
+
+
+  // ── HISTORY ───────────────────────────────────────────────────
+  function showHistory() {
+    document.getElementById('input-section').style.display = 'none';
+    document.getElementById('quiz-section').style.display = 'none';
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('history-section').style.display = 'block';
+    renderHistory();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showInput() {
+    document.getElementById('history-section').style.display = 'none';
+    document.getElementById('topicInput').value = '';
+    document.getElementById('history-section').style.display = 'none';
+    document.getElementById('input-section').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderHistory() {
+    var list = document.getElementById('historyList');
+    if (!testHistory.length) {
+      list.innerHTML = '<div class="history-empty">📭 Abhi koi test record nahi hai.<br>Pehle ek test do!</div>';
+      return;
+    }
+    list.innerHTML = testHistory.map(function(h) {
+      var scoreClass = h.score >= 80 ? 'great' : h.score >= 60 ? 'ok' : 'bad';
+      var badge = h.score >= 90 ? '🏆 Excellent' : h.score >= 80 ? '👍 Good' : h.score >= 60 ? '🙂 OK' : '📚 Study More';
+      return '<div class="history-card">'
+        + '<div class="history-info">'
+        + '<div class="history-topic">' + h.topic + '</div>'
+        + '<div class="history-meta">' + h.date + ' · ' + h.time + ' · ' + h.total + ' questions</div>'
+        + '<div class="history-badge" style="margin-top:5px;display:inline-block;">' + badge + '</div>'
+        + '</div>'
+        + '<div class="history-score ' + scoreClass + '">' + h.score + '%<div style="font-size:11px;color:var(--gray);font-family:Space Mono,monospace;">' + h.correct + '/' + h.total + '</div></div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function clearHistory() {
+    if (!confirm('Saari history delete karni hai?')) return;
+    testHistory = [];
+    localStorage.removeItem('mcqHistory');
+    renderHistory();
+    showToast('🗑 History cleared!');
+  }
+
+  function retakeTest() {
+    stopCurrentTimer();
+    userAnswers = {};
+    document.getElementById('submitBtn').style.display = 'none';
+    renderQuiz();
+  }
+
+  function newTest() {
+    stopCurrentTimer();
+    stopProgress(false);
+    quizData = [];
+    userAnswers = {};
+    uploadedImages = [];
+    document.getElementById('imgGrid').innerHTML = '';
+    document.getElementById('imgCount').textContent = '';
+    selectedName = '';
+    document.getElementById('userNameInput').value = '';
+    document.getElementById('textInput').value = '';
+
+    document.getElementById('fileInput').value = '';
+    document.getElementById('loadingBox').style.display = 'none';
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('input-section').style.display = 'block';
+    document.getElementById('quiz-section').style.display = 'none';
+    document.getElementById('result-section').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── TOAST ─────────────────────────────────────────────
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 3200);
+  }
+</script>
+</body>
+</html>
